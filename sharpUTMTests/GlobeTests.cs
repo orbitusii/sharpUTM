@@ -4,11 +4,30 @@ namespace sharpUTMTests
     public class GlobeTests
     {
         UTMGlobe globe;
+        List<(float lat, float lon, string zone)> testSamples = new List<(float, float, string)>();
+
+        float sampleStepSize = 0.5f;
 
         [TestInitialize]
         public void Init()
         {
             globe = new UTMGlobe();
+
+            GenerateSamples();
+        }
+
+        public void GenerateSamples ()
+        {
+            foreach(var zone in globe.Zones.Values)
+            {
+                for(float y = zone.Bottom; y < zone.Top; y+=sampleStepSize)
+                { 
+                    for(float x = zone.Left; x < zone.Right; x+=sampleStepSize)
+                    {
+                        testSamples.Add((y, x, zone.Name));
+                    }
+                }
+            }
         }
 
         [TestMethod]
@@ -99,6 +118,23 @@ namespace sharpUTMTests
             Assert.IsTrue(globe.Zones["35X"].Width == 12f, $"Zone 31X is not 12 degrees wide, is actually {globe.Zones["35X"].Width}");
             Assert.IsTrue(globe.Zones["37X"].Width == 9f, $"Zone 31X is not 9 degrees wide, is actually {globe.Zones["37X"].Width}");
             Assert.IsTrue(globe.Zones["38X"].Left == 42f);
+        }
+
+        [TestMethod]
+        public void TestZoneFromManyPoints ()
+        {
+            int count = testSamples.Count;
+            Console.WriteLine($"Testing for {count} points...");
+
+            foreach(var sample in testSamples)
+            {
+                string expected = sample.zone;
+                string actual = globe.ZoneForPoint(sample.lat, sample.lon);
+
+                Assert.IsTrue(expected.Equals(actual), $"Expected <{expected}>, got <{actual}> for ({sample.lat}, {sample.lon})");
+            }
+
+            Console.WriteLine("Success!");
         }
 
         [TestMethod]
