@@ -3,7 +3,7 @@ namespace sharpUTMTests
     [TestClass]
     public class GlobeTests
     {
-        UTMGlobe globe;
+        UTMGlobe globe = new UTMGlobe();
         List<(float lat, float lon, string zone)> testSamples = new List<(float, float, string)>();
 
         float sampleStepSize = 0.5f;
@@ -11,8 +11,6 @@ namespace sharpUTMTests
         [TestInitialize]
         public void Init()
         {
-            globe = new UTMGlobe();
-
             GenerateSamples();
         }
 

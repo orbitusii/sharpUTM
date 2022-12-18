@@ -13,12 +13,37 @@ namespace sharpUTM
         public string ZoneForPoint (float Lat, float Lon)
         {
             int floorLat = (int)Math.Floor(Lat);
-            int floorLon = (int)Math.Floor(Lon);
+            int floorLon = (int)Math.Floor(Lon/6);
 
             char latChar = GetLatChar(floorLat);
-            int lonIndex = (floorLon / 6) + 31;
 
-            return $"{lonIndex:d2}{latChar}";
+            int lonIndex = latChar switch
+            {
+                'V' => Lon switch
+                {
+                    >= 0 and < 3 => 31,
+                    >= 3 and < 12 => 32,
+                    _ => floorLon + 31,
+                },
+                'X' => Lon switch
+                {
+                    >= 0 and < 9 => 31,
+                    >= 9 and < 21 => 33,
+                    >= 21 and < 33 => 35,
+                    >= 33 and < 42 => 37,
+                    _ => floorLon + 31,
+                },
+                _ => floorLon + 31,
+            };
+
+            return latChar switch
+            {
+                'A'
+                or 'B' => $"{(char)(latChar + (Lon < 0 ? 0 : 1))}",
+                'Y'
+                or 'Z' => $"{(char)(latChar + (Lon < 0 ? -1 : 0))}",
+                _ => $"{lonIndex:d2}{latChar}",
+            };
         }
 
         public UTMGlobe()
@@ -69,7 +94,7 @@ namespace sharpUTM
             for(int w = 0; w < 60; w++)
             {
                 int lon = (w - 30) * 6;
-                string zoneName = $"{w + 1}{UpperLatChar}";
+                string zoneName = $"{w + 1:d2}{UpperLatChar}";
 
                 UTMZone? generated = GenerateHighLatitudeZones(UpperLatStart, lon, zoneName);
 
