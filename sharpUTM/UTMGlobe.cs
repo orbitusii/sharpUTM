@@ -10,6 +10,17 @@ namespace sharpUTM
     {
         public Dictionary<string, UTMZone> Zones { get; private set; }
 
+        public string ZoneForPoint (float Lat, float Lon)
+        {
+            int floorLat = (int)Math.Floor(Lat);
+            int floorLon = (int)Math.Floor(Lon);
+
+            char latChar = GetLatChar(floorLat);
+            int lonIndex = (floorLon / 6) + 31;
+
+            return $"{lonIndex:d2}{latChar}";
+        }
+
         public UTMGlobe()
         {
             Zones = new Dictionary<string, UTMZone>();
@@ -81,16 +92,19 @@ namespace sharpUTM
         /// <returns>A character corresponding to the UTM latitude band's character suffix, excluding I and O.</returns>
         public static char GetLatChar (int lat)
         {
-            if (lat < -80) return 'A';
-            else if (lat > 84) return 'Z';
-
             int start = (int)'A';
             int offset = (lat + 80) / 8;
 
             int skipI = offset >= 6 ? 1 : 0;
             int skipO = offset >= 11 ? 1 : 0;
 
-            return (char) (start + 2 + offset + skipI + skipO);
+            return lat switch
+            {
+                < -80 => 'A',
+                >= 84 => 'Z',
+                >= 72 => 'X',
+                _ => (char)(start + 2 + offset + skipI + skipO)
+            };
         }
 
         private static UTMZone GenerateRegularZones (int lat, int lon, string name)
