@@ -38,6 +38,7 @@ namespace sharpUTM
         /// <returns>The designator, or name, of the zone this point lies within (a string)</returns>
         public string ZoneDesignatorForPoint (float Lat, float Lon)
         {
+            // Wrap and clamp Longitude and Latitude values to avoid issues
             Lon = Math.Clamp(Lon >= 180 ? Lon - 360 : Lon, -180, 180);
             Lat = Math.Clamp(Lat, -90, 90);
 
@@ -68,13 +69,12 @@ namespace sharpUTM
             };
 
             // This switch accounts for irregular zone sizing and naming at the poles
-            // compared to all other zones
+            // when compared to all other zones.
             return latChar switch
             {
-                'A'
-                or 'B' => $"{(char)(latChar + (Lon < 0 ? 0 : 1))}",
-                'Y'
-                or 'Z' => $"{(char)(latChar + (Lon < 0 ? -1 : 0))}",
+                // Correct the character used for naming polar zones based on the point's longitude
+                'A' => $"{(char)(latChar + (Lon < 0 ? 0 : 1))}",
+                'Z' => $"{(char)(latChar + (Lon < 0 ? -1 : 0))}",
                 _ => $"{lonIndex:d2}{latChar}",
             };
         }
@@ -147,7 +147,7 @@ namespace sharpUTM
         }
 
         /// <summary>
-        /// Calculates the character suffix for a specific latitude band, exlcluding I and O. South of 80S it always returns 'A', North of 84N it always returns 'Z'.
+        /// Calculates the character suffix for a specific latitude band, excluding I and O. South of 80S it always returns 'A', North of 84N it always returns 'Z'.
         /// </summary>
         /// <param name="lat">The latitude in degrees</param>
         /// <returns>A character corresponding to the UTM latitude band's character suffix, excluding I and O.</returns>
@@ -156,6 +156,7 @@ namespace sharpUTM
             int start = (int)'A';
             int offset = (lat + 80) / 8;
 
+            //I and O are skipped in UTM due to their similarity to one and zero
             int skipI = offset >= 6 ? 1 : 0;
             int skipO = offset >= 11 ? 1 : 0;
 
@@ -184,12 +185,10 @@ namespace sharpUTM
         {
             UTMZone? zone = name.ToUpper() switch
             {
+                "32X" or "34X" or "36X" => null,
                 "31X" => UTMZone.Irregular(72, 0, 9, 12),
-                "32X" => null,
                 "33X" => UTMZone.Irregular(72, 9, 12, 12),
-                "34X" => null,
                 "35X" => UTMZone.Irregular(72, 21, 12, 12),
-                "36X" => null,
                 "37X" => UTMZone.Irregular(72, 33, 9, 12),
                 _ => UTMZone.Irregular(lat, lon, 6, 12)
             };
