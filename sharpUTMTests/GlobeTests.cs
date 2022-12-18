@@ -40,7 +40,7 @@ namespace sharpUTMTests
         [TestMethod]
         public void TestRegularZones ()
         {
-            List<UTMZone> zones = UTMGlobe.GenerateZones();
+            List<UTMZone> zones = globe.Zones.Values.ToList();
             int count = zones.Count;
             int index = 2;
 
@@ -102,7 +102,7 @@ namespace sharpUTMTests
         }
 
         [TestMethod]
-        public void DumpZones ()
+        public void DumpZonesToFile ()
         {
             string path = Path.Combine(Environment.CurrentDirectory, "Zones.txt");
             DateTime dateTime = DateTime.Now;
