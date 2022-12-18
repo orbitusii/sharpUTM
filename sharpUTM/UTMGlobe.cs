@@ -8,8 +8,6 @@ namespace sharpUTM
 {
     public class UTMGlobe
     {
-        private const float zone31VWidthAdjust = 3;
-
         public Dictionary<string, UTMZone> Zones { get; private set; }
 
         public UTMGlobe()
@@ -99,8 +97,8 @@ namespace sharpUTM
         {
             UTMZone zone = name.ToUpper() switch
             {
-                "31V" => UTMZone.Irregular(lat, lon, 6 - zone31VWidthAdjust, 8),
-                "32V" => UTMZone.Irregular(lat, lon - zone31VWidthAdjust, 6 + zone31VWidthAdjust, 8),
+                "31V" => UTMZone.Irregular(lat, lon, 3, 8),
+                "32V" => UTMZone.Irregular(lat, lon - 3, 9, 8),
                 _ => UTMZone.Regular(lat, lon)
             };
 
