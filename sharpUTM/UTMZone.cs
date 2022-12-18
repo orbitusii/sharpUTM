@@ -29,18 +29,18 @@
             this.Right = Left + width;
         }
 
-        public UTMZone SetName (string name)
+        internal UTMZone SetName (string name)
         {
             this.Name = name;
             return this;
         }
 
-        public static UTMZone Regular(float startLat, float startLon)
+        internal static UTMZone Regular(float startLat, float startLon)
         {
             return new UTMZone(startLat, startLon);
         }
 
-        public static UTMZone Irregular(float startLat, float startLon, float width, float height)
+        internal static UTMZone Irregular(float startLat, float startLon, float width, float height)
         {
             return new UTMZone(startLat, startLon, width, height);
         }
