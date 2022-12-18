@@ -10,13 +10,44 @@ namespace sharpUTM
     {
         public Dictionary<string, UTMZone> Zones { get; private set; }
 
-        public string ZoneForPoint (float Lat, float Lon)
+        /// <summary>
+        /// Gets the UTMZone that a point lies within
+        /// </summary>
+        /// <param name="lat">Latitude, in decimal degrees</param>
+        /// <param name="lon">Longitude, in decimal degrees</param>
+        /// <returns>A reference to the UTMZone that contains this point</returns>
+        public UTMZone ZoneForPoint (float lat, float lon)
         {
+            string designator = ZoneDesignatorForPoint(lat, lon);
+            UTMZone zone = Zones[designator];
+
+            if (!zone.Contains(lat, lon))
+                throw new ArgumentException($"The point specified does not lie within the bounds of the Zone retrieved!\n" +
+                    $"Expected Lat {zone.Bottom} to {zone.Top}, got {lat}\n" +
+                    $"Expected Lon {zone.Left} to {zone.Right}, got {lon}\n" +
+                    $"This should never happen. Please create an Issue on Github at https://github.com/orbitusii/sharpUTM/issues");
+
+            return zone;
+        }
+
+        /// <summary>
+        /// Gets the Zone designator (or name) for a lat-lon point.
+        /// </summary>
+        /// <param name="Lat">Latitude, in decimal degrees</param>
+        /// <param name="Lon">Longitude, in decimal degrees</param>
+        /// <returns>The designator, or name, of the zone this point lies within (a string)</returns>
+        public string ZoneDesignatorForPoint (float Lat, float Lon)
+        {
+            Lon = Math.Clamp(Lon >= 180 ? Lon - 360 : Lon, -180, 180);
+            Lat = Math.Clamp(Lat, -90, 90);
+
             int floorLat = (int)Math.Floor(Lat);
             int floorLon = (int)Math.Floor(Lon/6);
 
             char latChar = GetLatChar(floorLat);
 
+            // This nested switch accounts for irregular zone sizing in the latitude bands
+            // X, from 72 to 84 North, and V, from 56 to 64 North
             int lonIndex = latChar switch
             {
                 'V' => Lon switch
@@ -36,6 +67,8 @@ namespace sharpUTM
                 _ => floorLon + 31,
             };
 
+            // This switch accounts for irregular zone sizing and naming at the poles
+            // compared to all other zones
             return latChar switch
             {
                 'A'
@@ -46,6 +79,9 @@ namespace sharpUTM
             };
         }
 
+        /// <summary>
+        /// Initializes a new instance of UTMGlobe
+        /// </summary>
         public UTMGlobe()
         {
             Zones = new Dictionary<string, UTMZone>();
@@ -58,7 +94,7 @@ namespace sharpUTM
             }
         }
 
-        internal static List<UTMZone> GenerateZones ()
+        private static List<UTMZone> GenerateZones ()
         {
             var zones = new List<UTMZone> ();
 

@@ -6,7 +6,7 @@ namespace sharpUTMTests
         UTMGlobe globe = new UTMGlobe();
         List<(float lat, float lon, string zone)> testSamples = new List<(float, float, string)>();
 
-        float sampleStepSize = 0.5f;
+        float sampleStepSize = 1f;
 
         [TestInitialize]
         public void Init()
@@ -119,7 +119,7 @@ namespace sharpUTMTests
         }
 
         [TestMethod]
-        public void TestZoneFromManyPoints ()
+        public void TestZonesForManyPoints ()
         {
             int count = testSamples.Count;
             Console.WriteLine($"Testing for {count} points...");
@@ -127,9 +127,39 @@ namespace sharpUTMTests
             foreach(var sample in testSamples)
             {
                 string expected = sample.zone;
-                string actual = globe.ZoneForPoint(sample.lat, sample.lon);
+                string actual = globe.ZoneDesignatorForPoint(sample.lat, sample.lon);
 
                 Assert.IsTrue(expected.Equals(actual), $"Expected <{expected}>, got <{actual}> for ({sample.lat}, {sample.lon})");
+            }
+
+            Console.WriteLine("Success!");
+        }
+
+        [TestMethod]
+        public void TestZoneForEdges ()
+        {
+            float lat1 = -90;
+            float lat2 = 90;
+
+            float lon1 = -180;
+            float lon2 = 180;
+
+            Assert.AreEqual("B", globe.ZoneDesignatorForPoint(lat1, 0));
+            Assert.AreEqual("Z", globe.ZoneDesignatorForPoint(lat2, 0));
+
+            Assert.AreEqual("01N", globe.ZoneDesignatorForPoint(0, lon1));
+            Assert.AreEqual("01N", globe.ZoneDesignatorForPoint(0, lon2));
+        }
+
+        [TestMethod]
+        public void TestZoneReferences ()
+        {
+            int count = testSamples.Count;
+            Console.WriteLine($"Testing for {count} points...");
+
+            foreach (var sample in testSamples)
+            {
+                Assert.IsNotNull(globe.ZoneForPoint(sample.lat, sample.lon));
             }
 
             Console.WriteLine("Success!");
