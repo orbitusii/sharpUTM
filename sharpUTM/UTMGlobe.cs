@@ -24,7 +24,7 @@ namespace sharpUTM
             }
         }
 
-        public static List<UTMZone> GenerateZones ()
+        internal static List<UTMZone> GenerateZones ()
         {
             var zones = new List<UTMZone> ();
 
