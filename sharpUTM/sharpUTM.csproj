@@ -7,8 +7,4 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="MGRS\" />
-  </ItemGroup>
-
 </Project>
