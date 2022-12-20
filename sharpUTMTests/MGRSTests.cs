@@ -53,11 +53,42 @@ namespace sharpUTMTests
         [TestMethod]
         public void TestMGRSToString ()
         {
-            MGRSCoord coord = new MGRSCoord("AF", 12340, 12340, "12P");
-            string expected = "12P AF 1234 1234";
+            MGRSCoord coord = new MGRSCoord("AF", 12340, 12300, "12P");
+            string expected = "12P AF 1234 1230";
 
             Console.WriteLine($"Expected : {expected}");
             Console.WriteLine($"Actual   : {coord}");
+
+            Assert.AreEqual(expected, coord.ToString());
+        }
+
+        [TestMethod]
+        public void TestPrecisionChange ()
+        {
+            MGRSCoord coord = new MGRSCoord("AF", 1, 1, padded: false);
+            string expect0 = "AF 1 1";
+
+            Assert.AreEqual(1, coord.Precision);
+            Assert.AreEqual(expect0, coord.ToString());
+            Console.WriteLine($"Expected : {expect0}");
+            Console.WriteLine($"Actual   : {coord}");
+
+            // Increase the coordinate's precision to 5 by force
+            coord.Precision = 5;
+            string expect1 = "AF 10000 10000";
+            Console.WriteLine("Precision changed!");
+
+            Assert.AreEqual(5, coord.Precision);
+            Assert.AreEqual(expect1, coord.ToString());
+            Console.WriteLine($"Expected : {expect1}");
+            Console.WriteLine($"Actual   : {coord}");
+        }
+
+        [TestMethod]
+        public void TestMGRSUnPadded ()
+        {
+            MGRSCoord coord = new MGRSCoord("AF", 12, 12, padded: false);
+            string expected = "AF 12 12";
 
             Assert.AreEqual(expected, coord.ToString());
         }
