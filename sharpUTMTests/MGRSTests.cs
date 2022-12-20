@@ -20,9 +20,13 @@ namespace sharpUTMTests
             { "60X FF 12341234", new mgrsTestOutput { valid = true, coord = new MGRSCoord("FF", 12340, 12340, "60X") } },
             { "30U YB 05054 53454", new mgrsTestOutput { valid = true, coord = new MGRSCoord("YB", 05054, 53454, "30U") } },
             { "13T DE 93164 91705", new mgrsTestOutput { valid = true, coord = new MGRSCoord("DE", 93164, 91705, "13T") } },
-            { "q", new mgrsTestOutput{valid = false} },
             { "aa 1212", new mgrsTestOutput{valid = true, coord = new MGRSCoord("AA", 12000, 12000)} },
             { "ab1212", new mgrsTestOutput{valid = true, coord = new MGRSCoord("Ab", 12000, 12000)} },
+            { "af121", new mgrsTestOutput{valid = false } }, // invalid because we don't have an even number of digits in the coordinate pair!
+            { "af 12 123", new mgrsTestOutput{valid = false } }, // invalid because the number of digits isn't equal!
+            { "q", new mgrsTestOutput{valid = false} }, // invalid because it doesn't match the regex
+            { "q 12 12", new mgrsTestOutput{valid = false } }, // invalid because the grid square isn't two characters long
+
         };
 
         [TestInitialize]

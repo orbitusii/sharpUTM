@@ -12,6 +12,13 @@ namespace sharpUTM.MGRS
         /// <summary>
         /// Regular expression used for validating a string as an MGRS coordinate
         /// </summary>
+        // Groups:
+        // UTMZone (optional): zero to two digits and one letter, followed by an optional space
+        // Grid Square: two letters, followed by an optional space
+        // Coordinates: one or two sets of digits, separated by an optional space.
+        //              This can be 1-10 digits long. If it's a single bundle of digits,
+        //              it needs to be an even number of digits to be valid.
+        //              If it's a pair of sets, they need to be of equal length.
         internal static Regex validator = new Regex(@"(?<utmzone>\d{0,2}\p{L}{1})?[\ ]?(?<mgrsgrid>\p{L}{2})[\ ]?((?<coordinate>\d{1,10})[\ ]?){1,2}");
 
         public string UTMZone = string.Empty;
@@ -75,9 +82,7 @@ namespace sharpUTM.MGRS
         }
 
         /// <summary>
-        /// Checks the modulus of the east and north values against successive powers of 10,
-        /// i.e. 10 (10e1), 100 (10e2), 1,000 (10e3), 10,000 (10e4), 100,000 (10e5)
-        /// i.e. meters, 10s of meters, 100s of meters, kilometers, 10s of kilometers, via recursion,
+        /// Estimates the precision of the MGRS coordinate via recursion
         /// in order to truncate trailing zeros in the final coordinate string
         /// (i.e. "AF 12 12" is preferred over "AF 12000 12000")
         /// </summary>
@@ -86,7 +91,7 @@ namespace sharpUTM.MGRS
         /// <param name="place"></param>
         /// <returns></returns>
         private static int AssumePrecision (int east, int north, int place = 5)
-        {   // As stated, this works by comparings the modulus of each digit in the coordinate pairs,
+        {   // This works by comparings the modulus of each digit in the coordinate pairs,
             // looking for the farthest-right non-zero digits.
             // e.g. 12340 and 12300 (place = 5)
             //          ^         ^
@@ -119,8 +124,15 @@ namespace sharpUTM.MGRS
             return int.Parse(tostring.PadRight(5, '0'));
         }
 
+        /// <summary>
+        /// Attempts to parse a string representation of an MGRS coordinate.
+        /// </summary>
+        /// <param name="value">The string to parse</param>
+        /// <param name="coord">Reference to an MGRSCoord instance that will be assigned if parsing is successful</param>
+        /// <returns>True if parsing succeeded, false if it failed</returns>
         public static bool TryParse (string value, ref MGRSCoord coord)
         {
+            // Obviously return false if we didn't get a match. It's not an MGRS coordinate string.
             if (!validator.IsMatch(value))
                 return false;
 
@@ -134,39 +146,50 @@ namespace sharpUTM.MGRS
             {   // we have a single capture for coordinates - the string will need to be split
                 string rawCoord = coordinateGroup.Value;
 
-                // If the coordinate capture is too short or is not an even number of values,
-                // i.e. 2, 4, 6, 8, or 10, we can't parse it, fail the parse
-                if (rawCoord.Length < 2 && rawCoord.Length % 2 != 0)
+                // If the coordinate capture is too short or does not have an even number
+                // of digits, i.e. 2, 4, 6, 8, or 10, we can't parse it, fail!
+                if (rawCoord.Length < 2
+                    || rawCoord.Length % 2 != 0)
                     return false;
 
                 int splitPos = rawCoord.Length / 2;
 
+                // Split the coordinate capture in half down the middle.
                 c1 = rawCoord.Substring(0, splitPos);
                 c2 = rawCoord.Substring(splitPos, splitPos);
             }
             else
-            {   // we have two or more captures for coordinates (idk why we'd have 3 or more,
-                // the regex should limit it to two captures at most)
+            {   // we have two (or more) captures for coordinates
                 c1 = coordinateGroup.Captures[0].Value;
                 c2 = coordinateGroup.Captures[1].Value;
+
+                // Mismatched numbers of digits are a failure condition. Bye.
+                if(c1.Length != c2.Length)
+                    return false;
+
+                // If the captures have more than 5 digits each, trim them down.
+                // This won't result in meaningfully lost precision as the fifth digit
+                // in each set represents 1-meter increments. 6 digits would be 10-cm
+                // increments, and so on. Way more precise than anyone needs.
+                if (c1.Length > 5)
+                {
+                    c1 = c1.Substring(0, 5);
+                    c2 = c2.Substring(0, 5);
+                }
             }
 
-            // Make sure the coordinate strings are equal in length and are successfully parsed
-            // before assigning them to the coordinate reference
-            if (c1.Length == c2.Length)
+            coord.Precision = c1.Length;
+
+            // Ensure c1 and c2 are padded to 5 digits each with trailing zeros before parsing
+            c1 = c1.PadRight(5, '0');
+            c2 = c2.PadRight(5, '0');
+
+            // Parse and assign the coordinate values, or return false if these fail.
+            if (int.TryParse(c1, out int east)
+            && int.TryParse(c2, out int north))
             {
-                coord.Precision = c1.Length;
-
-                c1 = c1.PadRight(5, '0');
-                c2 = c2.PadRight(5, '0');
-
-                if (int.TryParse(c1, out int east)
-                && int.TryParse(c2, out int north))
-                {
-                    coord.Easting = east;
-                    coord.Northing = north;
-                }
-                else return false;
+                coord.Easting = east;
+                coord.Northing = north;
             }
             else return false;
 
@@ -174,7 +197,7 @@ namespace sharpUTM.MGRS
             if (match.Groups["utmzone"].Value != string.Empty)
                 coord.UTMZone = match.Groups["utmzone"].Value.ToUpper();
             
-            // Assign the MGRSGrid to the referenced coordinate
+            // Assign the MGRS Grid Square
             coord.GridSquare = match.Groups["mgrsgrid"].Value.ToUpper();
 
             return true;
