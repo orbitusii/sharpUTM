@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using sharpUTM.MGRS;
+﻿using sharpUTM.MGRS;
 
 namespace sharpUTMTests
 {
@@ -30,12 +25,12 @@ namespace sharpUTMTests
         };
 
         [TestInitialize]
-        public void Init ()
+        public void Init()
         {
         }
 
         [TestMethod]
-        public void TestMGRSParsing ()
+        public void TestMGRSParsing()
         {
             MGRSCoord coord = new MGRSCoord("", 0, 0);
 
@@ -45,7 +40,7 @@ namespace sharpUTMTests
 
                 Assert.AreEqual(sample.Value.valid, MGRSCoord.TryParse(sample.Key, ref coord));
 
-                if(sample.Value.coord is not null)
+                if (sample.Value.coord is not null)
                 {
                     Assert.IsTrue(sample.Value.coord.Equals(coord),
                         $"Expected {sample.Value.coord} with precision {sample.Value.coord.Precision}, " +
@@ -55,7 +50,7 @@ namespace sharpUTMTests
         }
 
         [TestMethod]
-        public void TestMGRSToString ()
+        public void TestMGRSToString()
         {
             MGRSCoord coord = new MGRSCoord("AF", 12340, 12300, "12P");
             string expected = "12P AF 1234 1230";
@@ -67,7 +62,7 @@ namespace sharpUTMTests
         }
 
         [TestMethod]
-        public void TestPrecisionChange ()
+        public void TestPrecisionChange()
         {
             MGRSCoord coord = new MGRSCoord("AF", 1, 1, padded: false);
             string expect0 = "AF 1 1";
@@ -89,7 +84,7 @@ namespace sharpUTMTests
         }
 
         [TestMethod]
-        public void TestMGRSUnPadded ()
+        public void TestMGRSUnPadded()
         {
             MGRSCoord coord = new MGRSCoord("AF", 12, 12, padded: false);
             string expected = "AF 12 12";

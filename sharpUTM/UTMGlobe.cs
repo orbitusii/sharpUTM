@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace sharpUTM
+﻿namespace sharpUTM
 {
     public class UTMGlobe
     {
@@ -16,7 +10,7 @@ namespace sharpUTM
         /// <param name="lat">Latitude, in decimal degrees</param>
         /// <param name="lon">Longitude, in decimal degrees</param>
         /// <returns>A reference to the UTMZone that contains this point</returns>
-        public UTMZone ZoneForPoint (float lat, float lon)
+        public UTMZone ZoneForPoint(float lat, float lon)
         {
             string designator = ZoneDesignatorForPoint(lat, lon);
             UTMZone zone = Zones[designator];
@@ -36,14 +30,14 @@ namespace sharpUTM
         /// <param name="Lat">Latitude, in decimal degrees</param>
         /// <param name="Lon">Longitude, in decimal degrees</param>
         /// <returns>The designator, or name, of the zone this point lies within (a string)</returns>
-        public string ZoneDesignatorForPoint (float Lat, float Lon)
+        public string ZoneDesignatorForPoint(float Lat, float Lon)
         {
             // Wrap and clamp Longitude and Latitude values to avoid issues
             Lon = Math.Clamp(Lon >= 180 ? Lon - 360 : Lon, -180, 180);
             Lat = Math.Clamp(Lat, -90, 90);
 
             int floorLat = (int)Math.Floor(Lat);
-            int floorLon = (int)Math.Floor(Lon/6);
+            int floorLon = (int)Math.Floor(Lon / 6);
 
             char latChar = GetLatChar(floorLat);
 
@@ -94,9 +88,9 @@ namespace sharpUTM
             }
         }
 
-        private static List<UTMZone> GenerateZones ()
+        private static List<UTMZone> GenerateZones()
         {
-            var zones = new List<UTMZone> ();
+            var zones = new List<UTMZone>();
 
             var PolarZoneA = UTMZone.Irregular(-90, -180, 180, 10).SetName("A");
             var PolarZoneB = UTMZone.Irregular(-90, 0, 180, 10).SetName("B");
@@ -108,14 +102,14 @@ namespace sharpUTM
             zones.Add(PolarZoneB);
 
             // Add the regular zones
-            for(int y = -80; y < 72; y += 8)
+            for (int y = -80; y < 72; y += 8)
             {
                 char latChar = GetLatChar(y);
 
-                for (int x = 0; x < 60; x ++)
+                for (int x = 0; x < 60; x++)
                 {
                     int lon = (x - 30) * 6;
-                    string zoneName = $"{x+1:d2}{latChar}";
+                    string zoneName = $"{x + 1:d2}{latChar}";
 
                     UTMZone generated = GenerateRegularZones(y, lon, zoneName);
 
@@ -126,8 +120,8 @@ namespace sharpUTM
             // Add high latitude (72-84 N) zones, i.e. 01X through 60X
             char UpperLatChar = GetLatChar(72);
             int UpperLatStart = 72;
-            
-            for(int w = 0; w < 60; w++)
+
+            for (int w = 0; w < 60; w++)
             {
                 int lon = (w - 30) * 6;
                 string zoneName = $"{w + 1:d2}{UpperLatChar}";
@@ -151,7 +145,7 @@ namespace sharpUTM
         /// </summary>
         /// <param name="lat">The latitude in degrees</param>
         /// <returns>A character corresponding to the UTM latitude band's character suffix, excluding I and O.</returns>
-        public static char GetLatChar (int lat)
+        public static char GetLatChar(int lat)
         {
             int start = (int)'A';
             int offset = (lat + 80) / 8;
@@ -169,7 +163,7 @@ namespace sharpUTM
             };
         }
 
-        private static UTMZone GenerateRegularZones (int lat, int lon, string name)
+        private static UTMZone GenerateRegularZones(int lat, int lon, string name)
         {
             UTMZone zone = name.ToUpper() switch
             {
@@ -181,7 +175,7 @@ namespace sharpUTM
             return zone.SetName(name);
         }
 
-        private static UTMZone? GenerateHighLatitudeZones (int lat, int lon, string name)
+        private static UTMZone? GenerateHighLatitudeZones(int lat, int lon, string name)
         {
             UTMZone? zone = name.ToUpper() switch
             {

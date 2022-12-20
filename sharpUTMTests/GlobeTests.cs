@@ -14,13 +14,13 @@ namespace sharpUTMTests
             GenerateSamples();
         }
 
-        public void GenerateSamples ()
+        public void GenerateSamples()
         {
-            foreach(var zone in globe.Zones.Values)
+            foreach (var zone in globe.Zones.Values)
             {
-                for(float y = zone.Bottom; y < zone.Top; y+=sampleStepSize)
-                { 
-                    for(float x = zone.Left; x < zone.Right; x+=sampleStepSize)
+                for (float y = zone.Bottom; y < zone.Top; y += sampleStepSize)
+                {
+                    for (float x = zone.Left; x < zone.Right; x += sampleStepSize)
                     {
                         testSamples.Add((y, x, zone.Name));
                     }
@@ -33,7 +33,7 @@ namespace sharpUTMTests
         {
             char[] validChars = "CDEFGHJKLMNPQRSTUVWX".ToCharArray();
 
-            for(int i = 0; i < validChars.Length; i++)
+            for (int i = 0; i < validChars.Length; i++)
             {
                 int lat = (i * 8) - 80;
 
@@ -55,7 +55,7 @@ namespace sharpUTMTests
         }
 
         [TestMethod]
-        public void TestRegularZones ()
+        public void TestRegularZones()
         {
             List<UTMZone> zones = globe.Zones.Values.ToList();
             int count = zones.Count;
@@ -71,19 +71,19 @@ namespace sharpUTMTests
 
                 for (int x = 0; x < 60; x++)
                 {
-                    string expectedName = $"{x+1:d2}{expectedChar}";
+                    string expectedName = $"{x + 1:d2}{expectedChar}";
                     UTMZone zone = zones[index++];
 
                     Assert.IsTrue(zone.Name == expectedName, $"[{x}, {y}] Expected {expectedName}, got {zone.Name}");
                 }
             }
 
-            Console.WriteLine($"Last Regular zone checked: [{index-1}]{zones[index - 1].Name}, ending at point {zones[index-1].Top}, {zones[index-1].Right}");
+            Console.WriteLine($"Last Regular zone checked: [{index - 1}]{zones[index - 1].Name}, ending at point {zones[index - 1].Top}, {zones[index - 1].Right}");
             Console.WriteLine($"Zones left over: {count - index}");
         }
 
         [TestMethod]
-        public void Test31VAnd31VWidth ()
+        public void Test31VAnd31VWidth()
         {
             Assert.IsTrue(globe.Zones["31V"].Width == 3.0f, $"31V is not 3 degrees wide, is actually {globe.Zones["31V"].Width}");
 
@@ -92,7 +92,7 @@ namespace sharpUTMTests
         }
 
         [TestMethod]
-        public void TestInvalidHighLatZones ()
+        public void TestInvalidHighLatZones()
         {
             Assert.ThrowsException<KeyNotFoundException>(() => { var z = globe.Zones["32X"]; });
             Assert.ThrowsException<KeyNotFoundException>(() => { var z = globe.Zones["34X"]; });
@@ -100,7 +100,7 @@ namespace sharpUTMTests
         }
 
         [TestMethod]
-        public void TestHighLatChar ()
+        public void TestHighLatChar()
         {
             char expected = 'X';
             char actual = UTMGlobe.GetLatChar(72);
@@ -109,7 +109,7 @@ namespace sharpUTMTests
         }
 
         [TestMethod]
-        public void TestWideHighLatZones ()
+        public void TestWideHighLatZones()
         {
             Assert.IsTrue(globe.Zones["31X"].Width == 9f, $"Zone 31X is not 9 degrees wide, is actually {globe.Zones["31X"].Width}");
             Assert.IsTrue(globe.Zones["33X"].Width == 12f, $"Zone 31X is not 12 degrees wide, is actually {globe.Zones["33X"].Width}");
@@ -119,12 +119,12 @@ namespace sharpUTMTests
         }
 
         [TestMethod]
-        public void TestZonesForManyPoints ()
+        public void TestZonesForManyPoints()
         {
             int count = testSamples.Count;
             Console.WriteLine($"Testing for {count} points...");
 
-            foreach(var sample in testSamples)
+            foreach (var sample in testSamples)
             {
                 string expected = sample.zone;
                 string actual = globe.ZoneDesignatorForPoint(sample.lat, sample.lon);
@@ -136,7 +136,7 @@ namespace sharpUTMTests
         }
 
         [TestMethod]
-        public void TestZoneForEdges ()
+        public void TestZoneForEdges()
         {
             float lat1 = -90;
             float lat2 = 90;
@@ -152,7 +152,7 @@ namespace sharpUTMTests
         }
 
         [TestMethod]
-        public void TestZoneReferences ()
+        public void TestZoneReferences()
         {
             int count = testSamples.Count;
             Console.WriteLine($"Testing for {count} points...");
@@ -166,7 +166,7 @@ namespace sharpUTMTests
         }
 
         [TestMethod]
-        public void DumpZonesToFile ()
+        public void DumpZonesToFile()
         {
             string path = Path.Combine(Environment.CurrentDirectory, "Zones.txt");
             DateTime dateTime = DateTime.Now;
@@ -184,7 +184,7 @@ namespace sharpUTMTests
 
             writer.WriteLine($"UTM Globe Zones ({dateTime:yyyy-mm-dd @ HH:mm:ss})");
 
-            foreach (var pair in globe.Zones )
+            foreach (var pair in globe.Zones)
             {
                 UTMZone zone = pair.Value;
 

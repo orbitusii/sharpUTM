@@ -12,7 +12,7 @@
 
         public bool IsRegular => Width == 6.0f && Height == 8.0f;
 
-        public bool Contains (float lat, float lon)
+        public bool Contains(float lat, float lon)
         {
             bool inLat = lat < Top && lat >= Bottom;
             bool inLon = lon < Right && lon >= Left;
@@ -20,7 +20,7 @@
             return inLat && inLon;
         }
 
-        private UTMZone (float startLat, float startLon, float width = 6f, float height = 8f)
+        private UTMZone(float startLat, float startLon, float width = 6f, float height = 8f)
         {
             this.Bottom = startLat;
             this.Top = Bottom + height;
@@ -29,7 +29,7 @@
             this.Right = Left + width;
         }
 
-        internal UTMZone SetName (string name)
+        internal UTMZone SetName(string name)
         {
             this.Name = name;
             return this;

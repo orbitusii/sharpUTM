@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
 
 namespace sharpUTM.MGRS
 {
@@ -58,12 +53,12 @@ namespace sharpUTM.MGRS
         /// If false, takes the east/north parameters as MGRS coordinate values (i.e. no leading zeros, the coordinates are passed as you would see in an MGRS string)</param>
         public MGRSCoord(string grid, int east, int north, string utm = "", bool padded = true)
         {
-            if(utm != string.Empty) 
+            if (utm != string.Empty)
                 UTMZone = utm.ToUpper();
 
             GridSquare = grid.ToUpper();
 
-            if(padded)
+            if (padded)
             {   // If the input coordinates are padded (default), pass them directly - the
                 // values are in raw meters
                 // e.g. new MGRSCoord("AF", 12, 12) will return "AF 00012 00012"
@@ -90,7 +85,7 @@ namespace sharpUTM.MGRS
         /// <param name="north"></param>
         /// <param name="place"></param>
         /// <returns></returns>
-        private static int AssumePrecision (int east, int north, int place = 5)
+        private static int AssumePrecision(int east, int north, int place = 5)
         {   // This works by comparings the modulus of each digit in the coordinate pairs,
             // looking for the farthest-right non-zero digits.
             // e.g. 12340 and 12300 (place = 5)
@@ -103,7 +98,7 @@ namespace sharpUTM.MGRS
             // We can't check digits any farther left than the first in each coordinate pair
             if (place <= 1) return 1;
 
-            int step = (int)Math.Pow(10, 6-place);
+            int step = (int)Math.Pow(10, 6 - place);
 
             // If both digits are zero, go one step leftwards and repeat
             if (east % step == 0 && north % step == 0)
@@ -118,7 +113,7 @@ namespace sharpUTM.MGRS
         /// </summary>
         /// <param name="raw"></param>
         /// <returns></returns>
-        private static int PadZeros (int raw)
+        private static int PadZeros(int raw)
         {
             string tostring = raw.ToString();
             return int.Parse(tostring.PadRight(5, '0'));
@@ -130,7 +125,7 @@ namespace sharpUTM.MGRS
         /// <param name="value">The string to parse</param>
         /// <param name="coord">Reference to an MGRSCoord instance that will be assigned if parsing is successful</param>
         /// <returns>True if parsing succeeded, false if it failed</returns>
-        public static bool TryParse (string value, ref MGRSCoord coord)
+        public static bool TryParse(string value, ref MGRSCoord coord)
         {
             // Obviously return false if we didn't get a match. It's not an MGRS coordinate string.
             if (!validator.IsMatch(value))
@@ -164,7 +159,7 @@ namespace sharpUTM.MGRS
                 c2 = coordinateGroup.Captures[1].Value;
 
                 // Mismatched numbers of digits are a failure condition. Bye.
-                if(c1.Length != c2.Length)
+                if (c1.Length != c2.Length)
                     return false;
 
                 // If the captures have more than 5 digits each, trim them down.
@@ -196,7 +191,7 @@ namespace sharpUTM.MGRS
             // Assign the UTMZone, an optional value, if it exists
             if (match.Groups["utmzone"].Value != string.Empty)
                 coord.UTMZone = match.Groups["utmzone"].Value.ToUpper();
-            
+
             // Assign the MGRS Grid Square
             coord.GridSquare = match.Groups["mgrsgrid"].Value.ToUpper();
 
