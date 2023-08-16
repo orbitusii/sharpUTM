@@ -14,7 +14,7 @@ namespace sharpUTM.MGRS
         //              This can be 1-10 digits long. If it's a single bundle of digits,
         //              it needs to be an even number of digits to be valid.
         //              If it's a pair of sets, they need to be of equal length.
-        internal static Regex validator = new Regex(@"(?<utmzone>\d{0,2}\p{L}{1})?[\ ]?(?<mgrsgrid>\p{L}{2})[\ ]?((?<coordinate>\d{1,10})[\ ]?){1,2}");
+        internal static readonly Regex validator = new Regex(@"(?<utmzone>\d{0,2}\p{L}{1})?[\ ]?(?<mgrsgrid>\p{L}{2})[\ ]?((?<coordinate>\d{1,10})[\ ]?){1,2}");
 
         public string UTMZone = string.Empty;
         public string GridSquare = string.Empty;
@@ -48,13 +48,13 @@ namespace sharpUTM.MGRS
         /// <param name="grid">The grid square, e.g. "AF"</param>
         /// <param name="east">The Easting coordinate, in meters</param>
         /// <param name="north">The Northing coordinate, in meters</param>
-        /// <param name="utm">The UTM Zone this coordinate lies within</param>
+        /// <param name="UtmZone">The UTM Zone this coordinate lies within</param>
         /// <param name="padded">If true (default), takes the east/north parameters as pure meters (i.e. with leading zeros to 5 digits).
         /// If false, takes the east/north parameters as MGRS coordinate values (i.e. no leading zeros, the coordinates are passed as you would see in an MGRS string)</param>
-        public MGRSCoord(string grid, int east, int north, string utm = "", bool padded = true)
+        public MGRSCoord(string grid, int east, int north, string UtmZone = "", bool padded = true)
         {
-            if (utm != string.Empty)
-                UTMZone = utm.ToUpper();
+            if (UtmZone != string.Empty)
+                UTMZone = UtmZone.ToUpper();
 
             GridSquare = grid.ToUpper();
 
@@ -196,6 +196,27 @@ namespace sharpUTM.MGRS
             coord.GridSquare = match.Groups["mgrsgrid"].Value.ToUpper();
 
             return true;
+        }
+
+        public static MGRSCoord FromLatLon(double Lat, double Lon)
+        {
+            UTMCoord utm = UTMCoord.FromLatLon(Lat, Lon);
+            return FromUTM(utm);
+        }
+
+        public static MGRSCoord FromUTM (UTMCoord UTM)
+        {
+            return new MGRSCoord("", 0, 0, UTM.Zone);
+        }
+
+        public (double Lat, double Lon) ToLatLon ()
+        {
+            return (0, 0);
+        }
+
+        public UTMCoord ToUTM ()
+        {
+            return new UTMCoord(UTMZone, 0, 0);
         }
 
         public bool Equals(MGRSCoord? other)
