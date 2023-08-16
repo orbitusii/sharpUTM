@@ -206,7 +206,7 @@ namespace sharpUTM.MGRS
 
         public static MGRSCoord FromUTM (UTMCoord UTM)
         {
-            return new MGRSCoord("", 0, 0, UTM.Zone);
+            return new MGRSCoord("", 0, 0, UTM.ZoneName);
         }
 
         public (double Lat, double Lon) ToLatLon ()

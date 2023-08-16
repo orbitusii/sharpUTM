@@ -13,13 +13,14 @@ namespace sharpUTM
         internal static readonly Regex validator = new Regex(@"(?<zone>\d{2}[^IiOo])\s?(?<easting>\d+([.]\d+)?)(mE)?\s(?<northing>\d+([.]\d+)?)(mN)?");
 
         public UTMGlobe Globe { get; set; }
-        public string Zone = string.Empty;
+        public string ZoneName = string.Empty;
+        public UTMZone Zone => Globe.Zones[ZoneName];
         public double Easting;
         public double Northing;
 
         public UTMCoord(string Zone, double Easting, double Northing)
         {
-            this.Zone = Zone;
+            this.ZoneName = Zone;
             this.Easting = Easting;
             this.Northing = Northing;
             this.Globe = UTMGlobe.Reference;
@@ -27,7 +28,7 @@ namespace sharpUTM
 
         public UTMCoord(string Zone, double Easting, double Northing, UTMGlobe Globe)
         {
-            this.Zone = Zone;
+            this.ZoneName = Zone;
             this.Easting = Easting;
             this.Northing = Northing;
             this.Globe = Globe;
@@ -95,22 +96,20 @@ namespace sharpUTM
 
         public (double Lat, double Lon) ToLatLon()
         {
-            var _zone = Globe.Zones.TryGetValue(Zone, out var _out) ? _out : throw new Exception($"Conversion from a UTMCoord failed! The Zone {Zone} does not exist in the referenced globe.");
-
             double xi = Northing / (Globe.ScaleFactor * Globe.EarthRadius);
             double eta = (Easting - 500000) / (Globe.ScaleFactor * Globe.EarthRadius);
 
             double chi = Math.Asin(Math.Sin(xi) / Math.Cosh(eta));
 
             double Lat = Trig.RadiansToDegrees(chi);
-            double Lon = _zone.Meridian + Trig.RadiansToDegrees(Math.Atan(Math.Sinh(eta) / Math.Cos(xi)));
+            double Lon = Zone.Meridian + Trig.RadiansToDegrees(Math.Atan(Math.Sinh(eta) / Math.Cos(xi)));
 
             return (Lat, Lon);
         }
 
         public override string ToString()
         {
-            return $"{Zone} {Easting}mE {Northing}mN";
+            return $"{ZoneName} {Easting}mE {Northing}mN";
         }
 
         public override bool Equals(object? obj)
@@ -123,7 +122,7 @@ namespace sharpUTM
         {
             if (other is null) return false;
 
-            bool matchzone = string.Equals(this.Zone, other.Zone);
+            bool matchzone = string.Equals(this.ZoneName, other.ZoneName);
             bool matchEst = this.Easting == other.Easting;
             bool matchNor = this.Northing == other.Northing;
 

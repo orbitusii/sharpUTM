@@ -28,7 +28,7 @@ namespace sharpUTMTests
 
             UTMCoord? parsed;
             Assert.IsTrue(UTMCoord.TryParse(input, out parsed));
-            Assert.IsTrue(expected.Equals(parsed), $"Assert.IsTrue failed. Expected:<{expected}>. Actual:<{parsed}>.");
+            Assert.AreEqual(expected, parsed);
         }
 
         [TestMethod]
