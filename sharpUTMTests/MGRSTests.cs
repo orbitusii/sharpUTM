@@ -91,6 +91,51 @@ namespace sharpUTMTests
 
             Assert.AreEqual(expected, coord.ToString());
         }
+
+        [TestMethod]
+        public void ConvertFromUTM()
+        {
+            MGRSCoord expected = new MGRSCoord("BA", 12, 12, "31N");
+
+            UTMCoord input = new UTMCoord("31N", 200012, 12);
+
+            Assert.AreEqual(expected, MGRSCoord.FromUTM(input));
+        }
+
+        [TestMethod]
+        public void ConvertFromLatLon ()
+        {
+            MGRSCoord expected = new MGRSCoord("BA", 12, 12, "31N");
+
+            double lat = 0.00012;
+            double lon = 0.30509;
+
+            Assert.AreEqual(expected, MGRSCoord.FromLatLon(lat, lon));
+        }
+
+        [TestMethod]
+        public void ConvertToUTM()
+        {
+            MGRSCoord input = new MGRSCoord("BA", 12, 12, "31N");
+
+            UTMCoord expected = new UTMCoord("31N", 200012, 12);
+
+            Assert.AreEqual(expected, input.ToUTM());
+        }
+
+        [TestMethod]
+        public void ConvertToLatLon()
+        {
+            MGRSCoord input = new MGRSCoord("BA", 12, 12, "31N");
+
+            double expectedlat = 0.00012;
+            double expectedlon = 0.30509;
+
+            var result = input.ToLatLon();
+
+            Assert.AreEqual(expectedlat, result.Lat);
+            Assert.AreEqual(expectedlon, result.Lon);
+        }
     }
 
     internal class mgrsTestOutput
