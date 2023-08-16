@@ -12,7 +12,7 @@ namespace sharpUTM
     {
         internal static readonly Regex validator = new Regex(@"(?<zone>\d{2}[^IiOo])\s?(?<easting>\d+([.]\d+)?)(mE)?\s(?<northing>\d+([.]\d+)?)(mN)?");
 
-        public UTMGlobe Globe { get; set; };
+        public UTMGlobe Globe { get; set; }
         public string Zone = string.Empty;
         public double Easting;
         public double Northing;
@@ -68,7 +68,12 @@ namespace sharpUTM
 
         public static UTMCoord FromLatLon(double Latitude, double Longitude)
         {
-            var _zone = UTMGlobe.Reference.ZoneForPoint((float)Latitude, (float)Longitude);
+            return UTMCoord.FromLatLon(Latitude, Longitude, UTMGlobe.Reference);
+        }
+
+        public static UTMCoord FromLatLon(double Latitude, double Longitude, UTMGlobe Globe)
+        {
+            var _zone = Globe.ZoneForPoint((float)Latitude, (float)Longitude);
 
             double lat_rad = Trig.DegreesToRadians(Latitude);
             double lon_rad = Trig.DegreesToRadians(Longitude);
@@ -78,21 +83,29 @@ namespace sharpUTM
             double cosLon = Math.Cos(lon_rad - mer_rad);
             double sinLon = Math.Sin(lon_rad - mer_rad);
 
-            double t = Math.Sinh(Trig.AtanH(sinLat) - 2 * Trig.AtanH(2 * sinLat));
+            double t = Math.Sinh(Trig.AtanH(sinLat));// - 2 * Trig.AtanH(2 * sinLat));
             double xiPrime = Math.Atan(t / cosLon);
             double etaPrime = Trig.AtanH(sinLon / Math.Sqrt(1 + (t * t)));
 
-            double Easting = 500000 + (UTMGlobe.Reference.ScaleFactor * UTMGlobe.Reference.EarthRadius * etaPrime);
-            double Northing = 0 + (UTMGlobe.Reference.ScaleFactor * UTMGlobe.Reference.EarthRadius * xiPrime);
+            double Easting = 500000 + (Globe.ScaleFactor * Globe.EarthRadius * etaPrime);
+            double Northing = 0 + (Globe.ScaleFactor * Globe.EarthRadius * xiPrime);
 
-            return new UTMCoord(_zone.Name, Math.Round(Easting), Math.Round(Northing));
+            return new UTMCoord(_zone.Name, Math.Round(Easting), Math.Round(Northing), Globe);
         }
 
         public (double Lat, double Lon) ToLatLon()
         {
-            var _zone = UTMGlobe.Reference.Zones.TryGetValue(Zone, out var _out) ? _out : throw new Exception($"Conversion from a UTMCoord failed! The Zone {Zone} does not exist in the referenced globe.");
+            var _zone = Globe.Zones.TryGetValue(Zone, out var _out) ? _out : throw new Exception($"Conversion from a UTMCoord failed! The Zone {Zone} does not exist in the referenced globe.");
 
-            
+            double xi = Northing / (Globe.ScaleFactor * Globe.EarthRadius);
+            double eta = (Easting - 500000) / (Globe.ScaleFactor * Globe.EarthRadius);
+
+            double chi = Math.Asin(Math.Sin(xi) / Math.Cosh(eta));
+
+            double Lat = Trig.RadiansToDegrees(chi);
+            double Lon = _zone.Meridian + Trig.RadiansToDegrees(Math.Atan(Math.Sinh(eta) / Math.Cos(xi)));
+
+            return (Lat, Lon);
         }
 
         public override string ToString()

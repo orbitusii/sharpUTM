@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -55,14 +56,41 @@ namespace sharpUTMTests
         }
 
         [TestMethod]
+        public void COnvertLLToUTMAtEdge ()
+        {
+            UTMCoord expected = new UTMCoord("31N", 721753, 553002);
+            double inputlat = 5;
+            double inputlon = 5;
+
+            UTMCoord fromLatLon = UTMCoord.FromLatLon(inputlat, inputlon);
+
+            Assert.AreEqual(expected, fromLatLon);
+        }
+
+        [TestMethod]
         public void ConvertUTMToLatLon ()
         {
             (double Lat, double Lon) expected = (5, 5);
 
-            UTMCoord input = new UTMCoord("31N", 721753.35, 553001.72);
+            UTMCoord input = new UTMCoord("31N", 721760, 553002);
 
             var actual = input.ToLatLon();
 
+            Debug.WriteLine(actual);
+            Assert.AreEqual(expected.Lat, actual.Lat);
+            Assert.AreEqual(expected.Lon, actual.Lon);
+        }
+
+        [TestMethod]
+        public void ConvertUTMToLatLon2()
+        {
+            (double Lat, double Lon) expected = (0, 3);
+
+            UTMCoord input = new UTMCoord("31N", 500000, 0);
+
+            var actual = input.ToLatLon();
+
+            Debug.WriteLine(actual);
             Assert.AreEqual(expected.Lat, actual.Lat);
             Assert.AreEqual(expected.Lon, actual.Lon);
         }
