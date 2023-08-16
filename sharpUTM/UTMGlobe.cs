@@ -2,7 +2,17 @@
 {
     public class UTMGlobe
     {
+        public static UTMGlobe Reference = new UTMGlobe();
+
         public Dictionary<string, UTMZone> Zones { get; private set; }
+        /// <summary>
+        /// Scale factor for the mercator projection. Used to correct for some error in the math used during coordinate conversion.
+        /// </summary>
+        public double ScaleFactor = 0.9996;
+        /// <summary>
+        /// Earth radius at the equator, in meters.
+        /// </summary>
+        public double EarthRadius = 6378137.0;
 
         /// <summary>
         /// Gets the UTMZone that a point lies within
@@ -92,10 +102,10 @@
         {
             var zones = new List<UTMZone>();
 
-            var PolarZoneA = UTMZone.Irregular(-90, -180, 180, 10).SetName("A");
-            var PolarZoneB = UTMZone.Irregular(-90, 0, 180, 10).SetName("B");
-            var PolarZoneY = UTMZone.Irregular(84, -180, 180, 6).SetName("Y");
-            var PolarZoneZ = UTMZone.Irregular(84, 0, 180, 6).SetName("Z");
+            var PolarZoneA = UTMZone.Irregular(-90, -180, 180, 10, 0).SetName("A");
+            var PolarZoneB = UTMZone.Irregular(-90, 0, 180, 10, 0).SetName("B");
+            var PolarZoneY = UTMZone.Irregular(84, -180, 180, 6, 0).SetName("Y");
+            var PolarZoneZ = UTMZone.Irregular(84, 0, 180, 6, 0).SetName("Z");
 
             // South Pole Zones
             zones.Add(PolarZoneA);
@@ -167,8 +177,8 @@
         {
             UTMZone zone = name.ToUpper() switch
             {
-                "31V" => UTMZone.Irregular(lat, lon, 3, 8),
-                "32V" => UTMZone.Irregular(lat, lon - 3, 9, 8),
+                "31V" => UTMZone.Irregular(lat, lon, 3, 8, 3),
+                "32V" => UTMZone.Irregular(lat, lon - 3, 9, 8, 9),
                 _ => UTMZone.Regular(lat, lon)
             };
 
@@ -180,11 +190,11 @@
             UTMZone? zone = name.ToUpper() switch
             {
                 "32X" or "34X" or "36X" => null,
-                "31X" => UTMZone.Irregular(72, 0, 9, 12),
-                "33X" => UTMZone.Irregular(72, 9, 12, 12),
-                "35X" => UTMZone.Irregular(72, 21, 12, 12),
-                "37X" => UTMZone.Irregular(72, 33, 9, 12),
-                _ => UTMZone.Irregular(lat, lon, 6, 12)
+                "31X" => UTMZone.Irregular(72, 0, 9, 12, 3),
+                "33X" => UTMZone.Irregular(72, 9, 12, 12, 15),
+                "35X" => UTMZone.Irregular(72, 21, 12, 12, 27),
+                "37X" => UTMZone.Irregular(72, 33, 9, 12, 39),
+                _ => UTMZone.Irregular(lat, lon, 6, 12, lon+3)
             };
 
             return zone?.SetName(name);
